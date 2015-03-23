@@ -12,7 +12,12 @@ Please read the following conventions we use to decide if this library will be u
 
 ### Conventions
 
+**Import**
 
+- `PageSaved`, `PageChanged`, `PageChangedBy` and `PageCreatedBy` are set to their original values on publish
+- Currently all pages' master language is hard coded to `sv` (swedish). This is a remain from an old custom migration an will be removed
+
+**Migrate**
 
 ## How to install
 

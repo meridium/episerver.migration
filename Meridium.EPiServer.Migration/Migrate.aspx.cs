@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Linq;
-using Castle.Core.Internal;
 using EPiServer.Core;
-using EPiServer.DataAbstraction;
-using EPiServer.ServiceLocation;
 using Meridium.EPiServer.Migration.Support;
 
 namespace Meridium.EPiServer.Migration {

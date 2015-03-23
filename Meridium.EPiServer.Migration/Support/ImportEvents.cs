@@ -53,7 +53,10 @@ namespace Meridium.EPiServer.Migration.Support {
                 if (externalUrl != null && !string.IsNullOrEmpty(externalUrl.Value)) {
                     externalUrl.Value = null;
                 }
+                // Todo: Do we need this? Should be handled by property mappings
                 RemoveDC(e, "MainBody");
+                // Todo: Remove this hack and add a hook in the api to handle 
+                //       this kind of special cases
                 SetMasterlangToSwedish(e);
                 _originalValues = new OriginalValues {
                     PageSaved = DateTime.Parse(GetValue(e, "PageSaved")),
