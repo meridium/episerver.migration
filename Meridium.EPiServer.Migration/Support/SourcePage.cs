@@ -12,8 +12,18 @@ namespace Meridium.EPiServer.Migration.Support {
         }
 
         public TValue GetValueWithFallback<TValue>(params string[] properties) where TValue : class {
-            var property = properties.SkipWhile(p => null == Properties.Get(p)).FirstOrDefault();
+            var property = properties.SkipWhile(p => !Properties.HasValue(p)).FirstOrDefault();
             return (property != null) ? GetValue<TValue>(property) : null;
+        }
+    }
+
+    internal static class PropertyDataExtensions {
+        public static bool HasValue(this PropertyDataCollection self, string key) {
+            var property = self.Get(key);
+
+            if (property == null) return false;
+
+            return !(property.IsNull || string.IsNullOrWhiteSpace(property.ToString()));
         }
     }
 }
