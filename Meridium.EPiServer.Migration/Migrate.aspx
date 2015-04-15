@@ -34,7 +34,16 @@
                 
                 <div class="six columns">
                     <label for="ImportPackage">Absolute file path of import package</label>
+                <% if( GetPackages().Any() ) { %>
                     <input id="ImportPackage" name="ImportPackage" type="text" class="u-full-width"/>
+                <% } else { %>
+                    <select id="ImportPackage" class="u-full-width" name="ImportPackage">
+                        <option value="none">-- Select package --</option>
+                    <% foreach (var package in GetPackages()) { %>
+                        <option value="<%=package.FullPath %>"><%=package.Name %></option>
+                    <% } %>
+                    </select>
+                <% } %>
                 </div>
             </div>
 

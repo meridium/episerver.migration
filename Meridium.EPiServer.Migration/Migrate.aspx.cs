@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Web;
+using System.Linq;
 using EPiServer.Core;
 using Meridium.EPiServer.Migration.Support;
 
@@ -71,6 +74,13 @@ namespace Meridium.EPiServer.Migration {
             }
         }
 
+        protected EpiServerDataPackage[] GetPackages() {
+            var basePath = HttpContext.Current.Server.MapPath("~/migration");
+            if(!Directory.Exists(basePath)) 
+                return new EpiServerDataPackage[0];
+
+            return new PackageResolver(basePath).GetPackages();
+        }
 
         protected void ValidateInputForMigration() {
             if (ContentReference.IsNullOrEmpty(StartPageId)) {
