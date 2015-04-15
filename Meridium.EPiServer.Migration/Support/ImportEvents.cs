@@ -55,9 +55,6 @@ namespace Meridium.EPiServer.Migration.Support {
                 }
                 // Todo: Do we need this? Should be handled by property mappings
                 RemoveDC(e, "MainBody");
-                // Todo: Remove this hack and add a hook in the api to handle 
-                //       this kind of special cases
-                SetMasterlangToSwedish(e);
                 _originalValues = new OriginalValues {
                     PageSaved = DateTime.Parse(GetValue(e, "PageSaved")),
                     PageChanged = DateTime.Parse(GetValue(e, "PageChanged")),
@@ -73,14 +70,6 @@ namespace Meridium.EPiServer.Migration.Support {
 
         public void DataImporter_FileImported(DataImporter dataimported, FileImportedEventArgs e) {
             ImportedFiles.Add(e);
-        }
-
-        private void SetMasterlangToSwedish(ContentImportingEventArgs contentImportingEventArgs) {
-            var properties   = contentImportingEventArgs.TransferContentData.RawContentData.Property;
-            var masterlang   = properties.Single(p => p.Name.Equals("PageMasterLanguageBranch"));
-            masterlang.Value = "sv";
-            var pagelang     = properties.Single(p => p.Name.Equals("PageLanguageBranch"));
-            pagelang.Value   = "sv";
         }
 
         private string GetValue(ContentImportingEventArgs e, string propertyName) {
