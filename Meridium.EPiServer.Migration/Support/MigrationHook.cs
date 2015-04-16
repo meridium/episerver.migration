@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.UI;
+using EPiServer.Core;
+using EPiServer.Enterprise;
 using CallbackRegistry = 
     System.Collections.Generic.Dictionary<
         System.Type, 
@@ -39,5 +42,37 @@ namespace Meridium.EPiServer.Migration.Support {
     }
 
     public interface IMigrationEvent {}
-    public class BeforeImportEvent : IMigrationEvent {} 
+
+    public class DataImporterEvent<TArgs> : IMigrationEvent {
+        public DataImporterEvent(TArgs e) { ImportData = e; }
+        public TArgs ImportData { get; private set; }
+    } 
+
+    public class BeforePageImportEvent : DataImporterEvent<ContentImportingEventArgs> {
+        public BeforePageImportEvent(ContentImportingEventArgs args) : base(args){}
+    }
+
+    public class AfterPageImportEvent : DataImporterEvent<ContentImportedEventArgs> {
+        public AfterPageImportEvent(ContentImportedEventArgs args) : base(args){}
+    }
+
+    public class BeforeFileImportEvent : DataImporterEvent<FileImportingEventArgs> {
+        public BeforeFileImportEvent(FileImportingEventArgs args) : base(args){}
+    }
+
+    public class AfterFileImportEvent : DataImporterEvent<FileImportedEventArgs> {
+        public AfterFileImportEvent(FileImportedEventArgs args) : base(args){}
+    }
+
+    public class BeforePageTransformEvent : IMigrationEvent {
+        public BeforePageTransformEvent(PageData page) { Page = page; }
+        public PageData Page { get; private set; }
+    }
+
+    public class AfterPageTransformEvent : IMigrationEvent {
+        public AfterPageTransformEvent(ContentReference contentReference) {
+            ContentReference = contentReference;
+        }
+        public ContentReference ContentReference { get; private set; }
+    } 
 }

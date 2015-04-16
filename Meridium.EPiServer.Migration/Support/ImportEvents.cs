@@ -40,6 +40,8 @@ namespace Meridium.EPiServer.Migration.Support {
             finally {
                 global::EPiServer.BaseLibrary.Context.Current["PageSaveDB:PageSaved"] = null;
             }
+
+            MigrationHook.Invoke(new AfterPageImportEvent(e));
         }
 
         /// <summary>
@@ -48,6 +50,8 @@ namespace Meridium.EPiServer.Migration.Support {
         public void DataImporter_ContentImporting(DataImporter dataImporting, ContentImportingEventArgs e) {
             _originalValues = null;
             if (e.TransferContentData is TransferPageData) {
+                MigrationHook.Invoke(new BeforePageImportEvent(e));
+
                 var externalUrl =
                     e.TransferContentData.RawContentData.Property.FirstOrDefault(x => x.Name == "PageExternalURL");
                 if (externalUrl != null && !string.IsNullOrEmpty(externalUrl.Value)) {
@@ -66,10 +70,12 @@ namespace Meridium.EPiServer.Migration.Support {
             }
         }
 
-        public List<FileImportedEventArgs> ImportedFiles = new List<FileImportedEventArgs>(); 
-
         public void DataImporter_FileImported(DataImporter dataimported, FileImportedEventArgs e) {
-            ImportedFiles.Add(e);
+            MigrationHook.Invoke(new AfterFileImportEvent(e));
+        }
+
+        public void DataImporter_FileImporting(DataImporter dataimported, FileImportingEventArgs e) {
+            MigrationHook.Invoke(new BeforeFileImportEvent(e));
         }
 
         private string GetValue(ContentImportingEventArgs e, string propertyName) {

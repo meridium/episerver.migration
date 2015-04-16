@@ -28,6 +28,8 @@ namespace Meridium.EPiServer.Migration.Support {
             }
             DataImporter.ContentImporting += _importEvents.DataImporter_ContentImporting;
             DataImporter.ContentImported += _importEvents.DataImporter_ContentImported;
+            DataImporter.FileImported += _importEvents.DataImporter_FileImported;
+            DataImporter.FileImporting += _importEvents.DataImporter_FileImporting;
             try {
                 logger.Log("Opening package");
                 using (var fs = new FileStream(packagePath, FileMode.Open, FileAccess.Read)) {
@@ -46,6 +48,8 @@ namespace Meridium.EPiServer.Migration.Support {
             finally {
                 DataImporter.ContentImporting -= _importEvents.DataImporter_ContentImporting;
                 DataImporter.ContentImported -= _importEvents.DataImporter_ContentImported;
+                DataImporter.FileImported -= _importEvents.DataImporter_FileImported;
+                DataImporter.FileImporting -= _importEvents.DataImporter_FileImporting;
             }
 
             logger.Log("Import done");

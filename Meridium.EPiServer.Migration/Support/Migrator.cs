@@ -39,6 +39,8 @@ namespace Meridium.EPiServer.Migration.Support {
         }
 
         private void TransformPage(PageData sourcePage) {
+            MigrationHook.Invoke(new BeforePageTransformEvent(sourcePage));
+
             _currentConvertablePageData.Properties = sourcePage.Property;
             _currentConvertablePageData.TypeName = sourcePage.PageTypeName;
 
@@ -62,9 +64,11 @@ namespace Meridium.EPiServer.Migration.Support {
                 PrincipalInfo.CurrentPrincipal =
                     PrincipalInfo.CreatePrincipal(sourcePage.ChangedBy);
                 global::EPiServer.BaseLibrary.Context.Current["PageSaveDB:PageSaved"] = true;
-                _repo.Save(transformedPage,
+                var savedPage = _repo.Save(transformedPage,
                     SaveAction.ForceCurrentVersion | SaveAction.Publish | SaveAction.SkipValidation,
                     AccessLevel.NoAccess);
+
+                MigrationHook.Invoke(new AfterPageTransformEvent(savedPage));
             }
             finally {
                 global::EPiServer.BaseLibrary.Context.Current["PageSaveDB:PageSaved"] = null;
