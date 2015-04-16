@@ -75,7 +75,9 @@ namespace Meridium.EPiServer.Migration {
         }
 
         protected EpiServerDataPackage[] GetPackages() {
-            var basePath = HttpContext.Current.Server.MapPath("~/migration");
+            var basePath = HttpContext.Current
+                .Server.MapPath("~/migration/packages");
+
             if(!Directory.Exists(basePath)) 
                 return new EpiServerDataPackage[0];
 
