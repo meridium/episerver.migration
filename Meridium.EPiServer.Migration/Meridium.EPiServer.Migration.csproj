@@ -184,6 +184,7 @@
     <Compile Include="Support\IPageMapper.cs" />
     <Compile Include="Support\MapperRegistry.cs" />
     <Compile Include="Support\MediaDataAssets.cs" />
+    <Compile Include="Support\MigrationHook.cs" />
     <Compile Include="Support\MigrationLogger.cs" />
     <Compile Include="Support\Migrator.cs" />
     <Compile Include="Support\PackageResolver.cs" />

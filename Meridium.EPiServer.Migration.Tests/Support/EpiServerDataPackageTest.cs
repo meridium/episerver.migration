@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Meridium.EPiServer.Migration.Support; 
+﻿using Meridium.EPiServer.Migration.Support;
+using NFluent;
 using Xunit;
-using FluentAssertions;
+
 
 namespace Meridium.EPiServer.Migration.Tests.Support {
     public class EpiServerDataPackageTest {
@@ -17,7 +13,7 @@ namespace Meridium.EPiServer.Migration.Tests.Support {
 
                 var packageName = package.Name;
 
-                packageName.Should().Be("baz");
+                Check.That(packageName).Equals("baz");
             }        
         }
     }

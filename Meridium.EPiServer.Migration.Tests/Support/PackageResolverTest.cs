@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Meridium.EPiServer.Migration.Support;
 using Xunit;
-using FluentAssertions;
+using NFluent;
 
 namespace Meridium.EPiServer.Migration.Tests.Support {
     public class PackageResolverTest {
@@ -19,10 +14,9 @@ namespace Meridium.EPiServer.Migration.Tests.Support {
 
                 var packages = resolver.GetPackages();
 
-                packages
-                    .Select(p => p.Name)
-                    .Should()
-                    .BeEquivalentTo(new[] { "Foo", "Bar", "Baz" });
+                Check.That(packages.Extracting("Name"))
+                    .HasSize( 3 )
+                    .And.Contains("Foo", "Bar", "Baz");
             }
         }
     }
