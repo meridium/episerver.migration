@@ -14,11 +14,11 @@ namespace Meridium.EPiServer.Migration.Support {
             _importEvents = new ImportEvents();
         }
 
-        public virtual void ImportContent(string packagePath, MigrationLogger logger = null) {
-            logger = logger ?? new MigrationLogger();
-
+        public virtual void ImportContent(string packagePath, IMigrationLog logger) {
             logger.Log("Import package path: {0}", packagePath);
             logger.Log("Import root page:    {0}", _importRoot);
+
+            _importEvents.Log = logger;
 
             var assetMigrator = new AssetMigrator(_importRoot).Init();
             var importer = new DataImporter();

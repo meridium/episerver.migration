@@ -11,6 +11,7 @@ using EPiServer.Security;
 namespace Meridium.EPiServer.Migration.Support {
     class ImportEvents {
         private OriginalValues _originalValues = null;
+        public IMigrationLog Log { get; set; }
 
         /// <summary>
         /// After the page is imported
@@ -41,7 +42,7 @@ namespace Meridium.EPiServer.Migration.Support {
                 global::EPiServer.BaseLibrary.Context.Current["PageSaveDB:PageSaved"] = null;
             }
 
-            MigrationHook.Invoke(new AfterPageImportEvent(e));
+            MigrationHook.Invoke(new AfterPageImportEvent(e), Log);
         }
 
         /// <summary>
@@ -50,7 +51,7 @@ namespace Meridium.EPiServer.Migration.Support {
         public void DataImporter_ContentImporting(DataImporter dataImporting, ContentImportingEventArgs e) {
             _originalValues = null;
             if (e.TransferContentData is TransferPageData) {
-                MigrationHook.Invoke(new BeforePageImportEvent(e));
+                MigrationHook.Invoke(new BeforePageImportEvent(e), Log);
 
                 var externalUrl =
                     e.TransferContentData.RawContentData.Property.FirstOrDefault(x => x.Name == "PageExternalURL");
@@ -65,17 +66,16 @@ namespace Meridium.EPiServer.Migration.Support {
                     PageChangedBy = GetValue(e, "PageChangedBy"),
                     PageCreatedBy = GetValue(e, "PageCreatedBy"),
                     PageGuid = Guid.Parse(GetValue(e, "PageGUID"))
-
                 };
             }
         }
 
         public void DataImporter_FileImported(DataImporter dataimported, FileImportedEventArgs e) {
-            MigrationHook.Invoke(new AfterFileImportEvent(e));
+            MigrationHook.Invoke(new AfterFileImportEvent(e), Log);
         }
 
         public void DataImporter_FileImporting(DataImporter dataimported, FileImportingEventArgs e) {
-            MigrationHook.Invoke(new BeforeFileImportEvent(e));
+            MigrationHook.Invoke(new BeforeFileImportEvent(e), Log);
         }
 
         private string GetValue(ContentImportingEventArgs e, string propertyName) {
