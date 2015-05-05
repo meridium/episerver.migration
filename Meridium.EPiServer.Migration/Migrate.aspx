@@ -75,7 +75,7 @@
             <h2>Clean up</h2>
             <div class="row">
                 <div class="six columns">
-                    <input type="submit" class="button-primary" name="delete-pagetypes" value="Delete page types" />
+                    <input type="submit" class="button-primary" name="delete-pagetypes" value="Delete page types" id="cleanup"/>
                 </div>
                 <div class="six columns">
                     <label>
@@ -137,6 +137,8 @@
 
             onclick('import',  clickHandler(['UploadTarget', 'ImportPackage', 'Import']));
             onclick('migrate', clickHandler(['StartPageId',  'Mapper', 'Run']));
+            onclick('cleanup', clickHandler(['delete-pagetypes',  'logging-only']));
+
         }());
     </script>
 </body>

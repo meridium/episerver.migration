@@ -165,12 +165,6 @@ namespace Meridium.EPiServer.Migration {
                 new Log4NetLog(Log4netLog));
         }
 
-        protected string DisplayLog() {
-            if (Logger == null) return "";
-
-            return string.Format("<h2>Log</h2><div class='row log-output'><pre>{0}</pre></div>", Logger);
-        }
-
         private static readonly ILog Log4netLog =
             LogManager.GetLogger(typeof (Migrate));
     }
