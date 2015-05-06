@@ -85,6 +85,7 @@
                 </div>
             </div>
             
+            <h2>Log</h2>
             <div id="log" class="row log-output"></div>
         </form>
     </div>
