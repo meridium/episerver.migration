@@ -15,9 +15,6 @@ Please read the following conventions we use to decide if this library will be u
 **Import**
 
 - `PageSaved`, `PageChanged`, `PageChangedBy` and `PageCreatedBy` are set to their original values on publish
-- Currently all pages' master language is hard coded to `sv` (swedish). This is a remain from an old custom migration an will be removed
-
-**Migrate**
 
 ## How to install
 
@@ -115,6 +112,32 @@ public static class MigrationDefinitions {
 
 The `MapperRegistry.Register` method accepts a list of `IPageMapper`s. This can be useful if you want to separate the mappings, e.g. when you are importing content from more than one site or the original site had subsections with their own page types.
 
+### Hook on to events
+
+The import/migration process exposes a few events which you can hook on to. To register on an event, use the following syntax in your migration project:
+
+```c#
+MigrationHook.RegisterFor<BeforePageImportEvent>( (evt, log) => {
+  // Do stuff... Event data is in the evt object and 
+  // you can write messages to the log if you need to 
+});
+```
+
+The argument to the `RegisterFor` method is an `Action<TEvent, IMigrationLog>` action callback. The first argument of this function is an object containing the event data. The second is an instance of `IMigrationLog` which you may use to output messages to the log.
+
+Event data objects are derived from the `DataImporterEvent<T>` class which has a property `T ImportData` holding the information which is relevant for the event type.
+
+The following events are available:
+
+Event type | ImportData type | Description
+------------|------------|------------
+`BeforePageImportEvent` | `ContentImportingEventArgs`| Fires before a page is imported
+`AfterPageImportEvent` | `ContentImportedEventArgs` | Fires after a page is imported
+`BeforeFileImportEvent` | `FileImportingEventArgs` | Fires before a file is imported
+`AfterFileImportEvent` | `FileImportedEventArgs` | Fires after a file is imported
+`BeforePageTransformEvent` | `PageData` | Fires before a page transformed. The `PageData` is the old page which will be transformed to a new type.
+`AfterPageTransformEvent` | `ContentReference` | Fires after a page is transformed. The `ContentReference` is a reference to the new page.
+
 ## Execute migration
 
 When you have built and tested your mappings it is time to execute the migration. These are the steps.
@@ -127,7 +150,9 @@ Copy the export packages to the server where the migration will take place.
 
 ### 2. "Install" your migration dll to the target site
 
-Move your migration dll that contain the page mappings together with the **Meridium.EPiServer.Migration** and the **HtmlAgilityPack** dlls to the bin folder of the target site. Copy the **Migrate.aspx** file to a suitable location.
+Move **your migration dll** which contains the page mappings together with the **Meridium.EPiServer.Migration** and the **HtmlAgilityPack** dlls to the bin folder of the target site. Copy the **Migrate.aspx** file a new directory called **~/migration/**. 
+
+If you want your packages to be auto discovered by the migration tool you must put them in the **~/migration/packages/** directory.
 
 ### 3. Open the Migrate.aspx page in a browser
 
@@ -135,15 +160,13 @@ The **Migrate.aspx** page consists of three steps: **Import**, **Migrate** and *
 
 #### 3.1 Import
 
-The **Import** step performs an import of the pages which were exported from the other site in **step 1**. The input needed from you is the page id of the page under which the content will be imported and the absolute path on the ser ver of the package to import. When you're done, click **Import** to start the import. 
+The **Import** step performs an import of the pages which were exported from the other site in **step 1**. The input needed from you is the page id of the page under which the content will be imported and the **absolute** path on the server of the package to import. _If you put the packages in the ~/migration/packages/ directory, this is handled for you and you get a nice drop down list._ When you're done, click **Import** to start the import. 
 
-When the import is done the log output is displayed at the bottom of the page.
+During the import the log should update on the bottom of the page.
 
 #### 3.2 Migrate
 
 The next step is to perform the actual migration of content from old page types to the new types. Specify the `id` of the root page of the imported pages in **step 3.1** and select the page mapping you want to use from the drop down list. Click the **Migrate** button to start the migration.
-
-Log output is displayed at the bottom of the page when the migration is done.
 
 #### 3.3 Clean up
 
@@ -158,7 +181,7 @@ The heuristic used when deciding which page types to remove is
 
 When you are done you can
 
-- Delete the **Migrate.aspx** page
+- Delete the **migration** directory
 - Delete the dll:s you copied in **step 2**
 - Delete the import packages.
 
