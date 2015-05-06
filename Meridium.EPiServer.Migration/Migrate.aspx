@@ -111,14 +111,19 @@
                     currentFieldValue;
                 for (var i = 0; i < fields.length; i++) {
                     currentFieldValue = getEncodedFieldValue(fields[i]);
-                    formValues.push(fields[i] + '=' + currentFieldValue);
+                    if (currentFieldValue) {
+                        formValues.push(fields[i] + '=' + currentFieldValue);
+                    }
                 }
                 return formValues.join('&');
             };
 
             var getEncodedFieldValue = function(field) {
-                var value = document.getElementsByName(field)[0].value;
-                return encodeURIComponent(value);
+                var input = document.getElementsByName(field)[0];
+                if (input.type === 'checkbox' && !input.checked) {
+                    return null;
+                }
+                return encodeURIComponent(input.value);
             };
 
             var onclick = function(buttonid, handler) {
