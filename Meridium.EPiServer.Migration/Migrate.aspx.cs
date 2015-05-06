@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Web;
 using System.Linq;
 using EPiServer.Core;
+using log4net;
 using Meridium.EPiServer.Migration.Support;
 
 namespace Meridium.EPiServer.Migration {
@@ -51,25 +53,27 @@ namespace Meridium.EPiServer.Migration {
                 if (!string.IsNullOrEmpty(Request.Form["Run"])) {
                     ValidateInputForMigration();
                     MigrateContent();
+                    Response.End();
                 }
                 if (!string.IsNullOrEmpty(Request.Form["Import"])) {
                     ValidateInputForImport();
                     ImportContent();
+                    Response.End();
                 }
                 if (!string.IsNullOrEmpty(Request.Form["delete-pagetypes"])) {
                     DeletePageTypes();
+                    Response.End();
                 }
             }
+            catch (ThreadAbortException) {
+                Logger.Log("End of transmission");
+            }
             catch (AggregateException ex) {
-                Logger = new MigrationLogger();
-                Logger.Log("!!! Error in migration !!!");
                 foreach (var innerException in ex.InnerExceptions) {
                     Logger.Log(innerException.ToString());
                 }
             }
             catch (Exception ex) {
-                Logger = new MigrationLogger();
-                Logger.Log("!!! Error in migration !!!");
                 Logger.Log(ex.ToString());
             }
         }
@@ -105,7 +109,8 @@ namespace Meridium.EPiServer.Migration {
 
         protected void DeletePageTypes() {
             var loggingOnly = Request.Form["logging-only"] != null;
-            Logger = new MigrationLogger();
+            InitLog();
+
             Logger.Log("Starting page type deletion @ {0:HH:mm:ss}", DateTime.Now);
             var deleter = new ImportedPageTypeDeleter(Logger);
             try {
@@ -122,7 +127,7 @@ namespace Meridium.EPiServer.Migration {
 
         protected void ImportContent() {
             var importer = new Importer(ImportRoot);
-            Logger = new MigrationLogger();
+            InitLog();
             Logger.Log("Starting import @ {0:HH:mm:ss}", DateTime.Now);
             try {
                 importer.ImportContent(ImportPackagePath, Logger);
@@ -138,7 +143,7 @@ namespace Meridium.EPiServer.Migration {
 
         protected void MigrateContent() {
             var migrator = new Migrator(StartPageId, SelectedPageMapper);
-            Logger = new MigrationLogger();
+            InitLog();
             Logger.Log("Starting migration @ {0:HH:mm:ss}", DateTime.Now);
             try {
                 migrator.MigrateContent(Logger);
@@ -152,12 +157,15 @@ namespace Meridium.EPiServer.Migration {
             }
         }
 
-        internal MigrationLogger Logger { get; set; }
+        internal IMigrationLog Logger { get; set; }
 
-        protected string DisplayLog() {
-            if (Logger == null) return "";
-
-            return string.Format("<h2>Log</h2><div class='row log-output'><pre>{0}</pre></div>", Logger);
+        private void InitLog() {
+            Logger = new CompositeMigrationLog(
+                new HttpResponseLog(Response),
+                new Log4NetLog(Log4netLog));
         }
+
+        private static readonly ILog Log4netLog =
+            LogManager.GetLogger(typeof (Migrate));
     }
 }

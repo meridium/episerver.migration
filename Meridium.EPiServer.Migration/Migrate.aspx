@@ -48,7 +48,7 @@
             </div>
 
             <div class="row">
-                <input type="submit" class="button-primary" name="Import" value="Import" />
+                <input type="submit" class="button-primary" name="Import" id="import" value="Import" />
             </div>
 
             <h2>Migrate</h2>
@@ -69,13 +69,13 @@
             </div>
 
             <div class="row">
-                <input type="submit" class="button-primary" name="Run" value="Migrate" />
+                <input type="submit" class="button-primary" name="Run" value="Migrate" id="migrate" />
             </div>
             
             <h2>Clean up</h2>
             <div class="row">
                 <div class="six columns">
-                    <input type="submit" class="button-primary" name="delete-pagetypes" value="Delete page types" />
+                    <input type="submit" class="button-primary" name="delete-pagetypes" value="Delete page types" id="cleanup"/>
                 </div>
                 <div class="six columns">
                     <label>
@@ -85,8 +85,67 @@
                 </div>
             </div>
             
-            <%= DisplayLog() %>
+            <h2>Log</h2>
+            <div id="log" class="row log-output"></div>
         </form>
     </div>
+    <script>
+        (function () {
+            var post = function(url, formdata) {
+                var xhr = new XMLHttpRequest(),
+                    log = document.getElementById('log'),
+                    counter = 0,
+                    updateLog = function() {
+                        console.log('response received #'+(++counter), xhr.responseText);
+                        log.innerHTML = '<pre id="messages">' + xhr.responseText + '</pre>';
+                        document.getElementById('messages').scrollIntoView(false);
+                    };
+
+                xhr.onreadystatechange = updateLog;
+                xhr.open('POST', url);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.send(formdata);
+            };
+
+            var readFormValues = function(fields) {
+                var formValues = [],
+                    currentFieldValue;
+                for (var i = 0; i < fields.length; i++) {
+                    currentFieldValue = getEncodedFieldValue(fields[i]);
+                    if (currentFieldValue) {
+                        formValues.push(fields[i] + '=' + currentFieldValue);
+                    }
+                }
+                return formValues.join('&');
+            };
+
+            var getEncodedFieldValue = function(field) {
+                var input = document.getElementsByName(field)[0];
+                if (input.type === 'checkbox' && !input.checked) {
+                    return null;
+                }
+                return encodeURIComponent(input.value);
+            };
+
+            var onclick = function(buttonid, handler) {
+                var button = document.getElementById(buttonid);
+                button.addEventListener('click', handler);
+            };
+
+            var clickHandler = function(fields) {
+                return function(e) {
+                    e.preventDefault();
+                    var formdata = readFormValues(fields);
+                    console.log('posting: ' + formdata, e);
+                    post('/migration/migrate.aspx', formdata);
+                };
+            };
+
+            onclick('import',  clickHandler(['UploadTarget', 'ImportPackage', 'Import']));
+            onclick('migrate', clickHandler(['StartPageId',  'Mapper', 'Run']));
+            onclick('cleanup', clickHandler(['delete-pagetypes',  'logging-only']));
+
+        }());
+    </script>
 </body>
 </html>

@@ -6,7 +6,7 @@ using EPiServer.ServiceLocation;
 
 namespace Meridium.EPiServer.Migration.Support {
     class ImportedPageTypeDeleter {
-        public ImportedPageTypeDeleter(MigrationLogger logger) {
+        public ImportedPageTypeDeleter(IMigrationLog logger) {
             _logger = logger;
             _repo = ServiceLocator.Current.GetInstance<PageTypeRepository>();
             _definitionRepo = ServiceLocator.Current.GetInstance<IPropertyDefinitionRepository>();
@@ -55,7 +55,7 @@ namespace Meridium.EPiServer.Migration.Support {
             }
         }
 
-        private readonly MigrationLogger _logger;
+        private readonly IMigrationLog _logger;
         private readonly PageTypeRepository _repo;
         private readonly IPropertyDefinitionRepository _definitionRepo;
         private Queue<PageType> _pageTypeQueue = new Queue<PageType>();

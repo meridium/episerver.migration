@@ -12,16 +12,16 @@ using CallbackRegistry =
 namespace Meridium.EPiServer.Migration.Support {
     public static class MigrationHook {
 
-        public static void RegisterFor<TEvent>(params Action<TEvent>[] callbacks) where TEvent : IMigrationEvent {
+        public static void RegisterFor<TEvent>(params Action<TEvent, IMigrationLog>[] callbacks) where TEvent : IMigrationEvent {
             var callbackList = GetCallbackList(typeof(TEvent));
 
             callbackList.AddRange(callbacks);
         }
 
-        internal static void Invoke<TEvent>(TEvent evt) where TEvent : IMigrationEvent {
-            var callbacks = GetCallbackList(typeof (TEvent)).Cast<Action<TEvent>>();
+        internal static void Invoke<TEvent>(TEvent evt, IMigrationLog log) where TEvent : IMigrationEvent {
+            var callbacks = GetCallbackList(typeof (TEvent)).Cast<Action<TEvent, IMigrationLog>>();
             foreach (var callback in callbacks) {
-                callback(evt);
+                callback(evt, log);
             }
         }
 

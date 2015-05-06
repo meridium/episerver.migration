@@ -26,11 +26,10 @@ namespace Meridium.EPiServer.Migration.Support {
             }
         }
 
-        private MigrationLogger Logger { get; set; }
+        private IMigrationLog Logger { get; set; }
 
-        public void MigrateContent(MigrationLogger logger = null) {
-            Logger = logger ?? new MigrationLogger();
-
+        public void MigrateContent(IMigrationLog logger) {
+            Logger = logger;
             var pages = GetPages().ToList();
             Logger.Log("Found {0} pages to migrate", pages.Count);
             foreach (var page in pages) {
@@ -39,7 +38,7 @@ namespace Meridium.EPiServer.Migration.Support {
         }
 
         private void TransformPage(PageData sourcePage) {
-            MigrationHook.Invoke(new BeforePageTransformEvent(sourcePage));
+            MigrationHook.Invoke(new BeforePageTransformEvent(sourcePage), Logger);
 
             _currentConvertablePageData.Properties = sourcePage.Property;
             _currentConvertablePageData.TypeName = sourcePage.PageTypeName;
@@ -68,7 +67,7 @@ namespace Meridium.EPiServer.Migration.Support {
                     SaveAction.ForceCurrentVersion | SaveAction.Publish | SaveAction.SkipValidation,
                     AccessLevel.NoAccess);
 
-                MigrationHook.Invoke(new AfterPageTransformEvent(savedPage));
+                MigrationHook.Invoke(new AfterPageTransformEvent(savedPage), Logger);
             }
             finally {
                 global::EPiServer.BaseLibrary.Context.Current["PageSaveDB:PageSaved"] = null;

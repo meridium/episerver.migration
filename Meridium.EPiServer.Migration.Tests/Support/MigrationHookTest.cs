@@ -13,14 +13,14 @@ namespace Meridium.EPiServer.Migration.Tests.Support {
             public void should_invoke_the_callbacks_registered_for_the_specified_event() {
                 MigrationHook.Clear();
                 var marker = "";
-                Action<TestEvent> addX = _ => marker += "x";
+                Action<TestEvent,IMigrationLog> addX = (x,l) => marker += "x";
 
                 MigrationHook.RegisterFor<TestEvent>( 
                     addX, addX, addX 
                 );
 
                 var evt = new TestEvent();
-                MigrationHook.Invoke(evt);
+                MigrationHook.Invoke(evt, null);
 
                 Check.That(marker).IsEqualTo("xxx");
             }
@@ -29,7 +29,7 @@ namespace Meridium.EPiServer.Migration.Tests.Support {
             public void should_just_silently_continue_when_no_callbacks_are_registered() {
                 MigrationHook.Clear();
                 var evt = new TestEvent();
-                Check.ThatCode( () => MigrationHook.Invoke(evt) ).DoesNotThrow();
+                Check.ThatCode( () => MigrationHook.Invoke(evt, null) ).DoesNotThrow();
             }
         }
     }
