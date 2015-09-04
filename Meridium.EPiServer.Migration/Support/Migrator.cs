@@ -37,7 +37,7 @@ namespace Meridium.EPiServer.Migration.Support {
             }
         }
 
-        private void TransformPage(PageData sourcePage) {
+        private void TransformPage(PageData sourcePage, bool clearPropertyValues = true) {
             MigrationHook.Invoke(new BeforePageTransformEvent(sourcePage), Logger);
 
             _currentConvertablePageData.Properties = sourcePage.Property;
@@ -47,10 +47,26 @@ namespace Meridium.EPiServer.Migration.Support {
             var sourcePageType = pTRepo.Load(sourcePage.PageTypeID);
             var targetPageType = pTRepo.Load(_mapper.GetTargetPageType(sourcePage));
 
+            string result;
             //Convert The Page
-            var result = PageTypeConverter.Convert(sourcePage.PageLink, sourcePageType, targetPageType,
-                new List<KeyValuePair<int, int>>(), false, false, _repo);
+            if (clearPropertyValues)
+            {
+                var keys = new List<KeyValuePair<int, int>>();
+                var properties = sourcePage.Property.Select(p => p.PropertyDefinitionID).Where(p => p > 0);
+                foreach (var propertyId in properties)
+                {
+                    keys.Add(new KeyValuePair<int, int>(propertyId, 0));
+                }
 
+                //Convert The Page
+                result = PageTypeConverter.Convert(sourcePage.PageLink, sourcePageType, targetPageType,
+                    keys, false, false, _repo);
+            }
+            else
+            {
+                result = PageTypeConverter.Convert(sourcePage.PageLink, sourcePageType, targetPageType,
+                    new List<KeyValuePair<int, int>>(), false, false, _repo);
+            }
             Logger.Log(result);
 
             var transformedPage = _repo.Get<PageData>(sourcePage.PageLink).CreateWritableClone();
