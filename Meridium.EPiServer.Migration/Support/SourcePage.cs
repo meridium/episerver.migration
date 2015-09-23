@@ -6,14 +6,18 @@ namespace Meridium.EPiServer.Migration.Support {
         public string TypeName { get; set; }
         public PropertyDataCollection Properties { get; set; }
 
-        public TValue GetValue<TValue>(string propertyName, TValue @default = default(TValue)) where TValue : class {
+        public TValue GetValue<TValue>(string propertyName, TValue @default = default(TValue)) {
             var data = Properties != null ? Properties.Get(propertyName) : null;
-            return (data != null) ? (data.Value as TValue) : @default;
+
+            if (data != null && data.Value is TValue)
+                return (TValue) data.Value;
+
+            return @default;
         }
 
-        public TValue GetValueWithFallback<TValue>(params string[] properties) where TValue : class {
+        public TValue GetValueWithFallback<TValue>(params string[] properties) {
             var property = properties.SkipWhile(p => !Properties.HasValue(p)).FirstOrDefault();
-            return (property != null) ? GetValue<TValue>(property) : null;
+            return (property != null) ? GetValue<TValue>(property) : default(TValue);
         }
     }
 
