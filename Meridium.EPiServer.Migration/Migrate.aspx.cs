@@ -30,6 +30,16 @@ namespace Meridium.EPiServer.Migration {
             }
         }
 
+        protected bool MoveAssetsToSite {
+            get {
+                bool doMoveToSiteAssets;
+                if (bool.TryParse(Request.Form["MoveAssetsToSite"], out doMoveToSiteAssets)) {
+                    return doMoveToSiteAssets;
+                }
+                return false;
+            }
+        }
+
         protected string ImportPackagePath {
             get { return Request.Form["ImportPackage"] ?? ""; }
         }
@@ -126,7 +136,7 @@ namespace Meridium.EPiServer.Migration {
         }
 
         protected void ImportContent() {
-            var importer = new Importer(ImportRoot);
+            var importer = new Importer(ImportRoot, MoveAssetsToSite);
             InitLog();
             Logger.Log("Starting import @ {0:HH:mm:ss}", DateTime.Now);
             try {

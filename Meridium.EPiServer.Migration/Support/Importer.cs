@@ -8,9 +8,11 @@ namespace Meridium.EPiServer.Migration.Support {
     class Importer {
         private readonly ContentReference _importRoot;
         private readonly ImportEvents _importEvents;
+        private readonly bool _moveAssetsToSite;
 
-        public Importer(ContentReference importRoot) {
+        public Importer(ContentReference importRoot, bool moveAssetsToSite) {
             _importRoot = importRoot;
+            _moveAssetsToSite = moveAssetsToSite;
             _importEvents = new ImportEvents();
         }
 
@@ -55,8 +57,8 @@ namespace Meridium.EPiServer.Migration.Support {
             logger.Log("Import done");
             logger.Log("Imported pages: {0}", importer.Log.Status.GetInformationLog(StatusInfo.StatusInfoAction.Imported).Count);
             logger.Log("Imported files: {0}", importer.Log.CountHandledFiles);
-            logger.Log("Moving imported assets to site assets");
-            assetMigrator.MoveAssetsToSite();
+            logger.Log("Moving imported assets to migration folder");
+            assetMigrator.MoveAssets(_moveAssetsToSite);
             logger.Log("Assets moved");
            
             logger.Log("-- Import errors --");

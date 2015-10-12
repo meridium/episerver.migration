@@ -19,9 +19,9 @@ namespace Meridium.EPiServer.Migration.Support {
             return this;
         }
 
-        public void MoveAssetsToSite() {
+        public void MoveAssets(bool moveAssetsToSite) {
             var fileDiff = _assetDiffer.TakeSnapshot().GetDiff();
-            var destinationFolder = GetDestinationFolder();
+            var destinationFolder = GetDestinationFolder(moveAssetsToSite);
             fileDiff.MoveFilesTo(destinationFolder);
             ApplyAccessControl(destinationFolder);
         }
@@ -36,10 +36,14 @@ namespace Meridium.EPiServer.Migration.Support {
             repo.Save(clone.ContentLink, acl, SecuritySaveType.ReplaceChildPermissions);
         }
 
-        private ContentFolder GetDestinationFolder() {
+        private ContentFolder GetDestinationFolder(bool moveAssetsToSite) {
             var repo = ServiceLocator.Current.GetInstance<IContentRepository>();
 
-            var siteAssetsFolder = repo.Get<ContentFolder>( _importRoot.GetSiteDefinition().SiteAssetsRoot);
+            var root = moveAssetsToSite
+                ? _importRoot.GetSiteDefinition().SiteAssetsRoot
+                : SiteDefinition.Current.GlobalAssetsRoot;
+
+            var siteAssetsFolder = repo.Get<ContentFolder>(root);
             var destinationFolder = AssetHelper.GetOrCreateFolder("Migrerade filer", siteAssetsFolder.ContentLink);
 
             return destinationFolder;

@@ -45,6 +45,16 @@
                     <input id="ImportPackage" name="ImportPackage" type="text" class="u-full-width"/>
                 <% } %>
                 </div>
+
+            </div>
+
+            <div class="row">
+                <div class="twelve columns">
+                    <label>
+                        <input type="checkbox" name="MoveAssetsToSite" value="move-assets">
+                        <span class="label-body">Move assets to <strong>site</strong> root</span>
+                    </label>
+                </div>
             </div>
 
             <div class="row">
