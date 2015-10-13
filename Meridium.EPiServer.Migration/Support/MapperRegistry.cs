@@ -29,8 +29,11 @@ namespace Meridium.EPiServer.Migration.Support {
 
     static class MigrationInitializer {
         private static readonly object locker = new object();
+        private static string migrationDirectory = "migration";
 
-        public static void FindAndExecuteInitializers(bool force = false) {
+        public static void FindAndExecuteInitializers(string migrationDir, bool force = false) {
+            migrationDirectory = migrationDir;
+
             if (IsInitialized && !force) return;
 
             lock (locker) {
@@ -74,7 +77,7 @@ namespace Meridium.EPiServer.Migration.Support {
 
         private static void InvokeInitializer(Type initializer) {
             var method = initializer.GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
-            if (method != null) method.Invoke(null, null);
+            if (method != null) method.Invoke(null, new object[] {migrationDirectory} );
         }
 
         private static bool IsInitialized = false;

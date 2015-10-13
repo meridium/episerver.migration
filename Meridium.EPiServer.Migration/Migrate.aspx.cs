@@ -58,8 +58,9 @@ namespace Meridium.EPiServer.Migration {
         }
 
         protected void Page_Load(object sender, EventArgs e) {
+            var migrationDir = HttpContext.Current.Server.MapPath("~/migration");
             try {
-                MigrationInitializer.FindAndExecuteInitializers();
+                MigrationInitializer.FindAndExecuteInitializers(migrationDir);
                 if (!string.IsNullOrEmpty(Request.Form["Run"])) {
                     ValidateInputForMigration();
                     MigrateContent();
