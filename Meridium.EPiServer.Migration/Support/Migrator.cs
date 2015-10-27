@@ -19,9 +19,9 @@ namespace Meridium.EPiServer.Migration.Support {
 
         IEnumerable<PageData> GetPages() {
             foreach (var pageRef in _repo.GetDescendents(_root).Concat(new[] {_root})) {
-                var page = _repo.Get<PageData>(pageRef);
-                if (page != null) {
-                    yield return page;
+                var pages = _repo.GetLanguageBranches<PageData>(pageRef);
+                foreach (var pageData in pages) {
+                    yield return pageData;
                 }
             }
         }
@@ -69,7 +69,9 @@ namespace Meridium.EPiServer.Migration.Support {
             }
             Logger.Log(result);
 
-            var transformedPage = _repo.Get<PageData>(sourcePage.PageLink).CreateWritableClone();
+            var transformedPage = _repo
+                .Get<PageData>(sourcePage.PageLink, sourcePage.Language)
+                .CreateWritableClone();
 
             _mapper.SetPropertyValues(transformedPage, _currentConvertablePageData);
 
