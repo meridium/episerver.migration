@@ -6,6 +6,7 @@ using EPiServer.Core;
 using EPiServer.Core.Transfer;
 using EPiServer.DataAccess;
 using EPiServer.Enterprise;
+using EPiServer.Framework;
 using EPiServer.Security;
 
 namespace Meridium.EPiServer.Migration.Support {
@@ -33,13 +34,13 @@ namespace Meridium.EPiServer.Migration.Support {
             page["PageChangedOnPublish"] = true;
             PrincipalInfo.CurrentPrincipal = PrincipalInfo.CreatePrincipal(_originalValues.PageChangedBy);
             try {
-                global::EPiServer.BaseLibrary.Context.Current["PageSaveDB:PageSaved"] = true;
-                DataFactory.Instance.Save(page, SaveAction.ForceCurrentVersion | SaveAction.Publish
-                                                | SaveAction.SkipValidation, 
+                ContextCache.Current["PageSaveDB:PageSaved"] = true;
+                DataFactory.Instance.Save(page, 
+                    SaveAction.ForceCurrentVersion | SaveAction.Publish | SaveAction.SkipValidation, 
                     AccessLevel.NoAccess);
             }
             finally {
-                global::EPiServer.BaseLibrary.Context.Current["PageSaveDB:PageSaved"] = null;
+                ContextCache.Current["PageSaveDB:PageSaved"] = null;
             }
 
             MigrationHook.Invoke(new AfterPageImportEvent(e), Log);

@@ -4,6 +4,7 @@ using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.DataAccess;
+using EPiServer.Framework;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using EPiServer.Web;
@@ -80,7 +81,7 @@ namespace Meridium.EPiServer.Migration.Support {
             try {
                 PrincipalInfo.CurrentPrincipal =
                     PrincipalInfo.CreatePrincipal(sourcePage.ChangedBy);
-                global::EPiServer.BaseLibrary.Context.Current["PageSaveDB:PageSaved"] = true;
+                ContextCache.Current["PageSaveDB:PageSaved"] = true;
                 var savedPage = _repo.Save(transformedPage,
                     SaveAction.ForceCurrentVersion | SaveAction.Publish | SaveAction.SkipValidation,
                     AccessLevel.NoAccess);
@@ -88,7 +89,7 @@ namespace Meridium.EPiServer.Migration.Support {
                 MigrationHook.Invoke(new AfterPageTransformEvent(savedPage), Logger);
             }
             finally {
-                global::EPiServer.BaseLibrary.Context.Current["PageSaveDB:PageSaved"] = null;
+                ContextCache.Current["PageSaveDB:PageSaved"] = null;
                 PrincipalInfo.CurrentPrincipal = oldPrincipal;
             }
         }

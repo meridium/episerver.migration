@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web;
-using log4net;
+using EPiServer.Logging.Compatibility;
 
 namespace Meridium.EPiServer.Migration.Support {
 

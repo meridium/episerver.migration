@@ -4,7 +4,7 @@ using System.Threading;
 using System.Web;
 using System.Linq;
 using EPiServer.Core;
-using log4net;
+using EPiServer.Logging.Compatibility;
 using Meridium.EPiServer.Migration.Support;
 
 namespace Meridium.EPiServer.Migration {
