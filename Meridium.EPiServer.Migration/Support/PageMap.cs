@@ -1,9 +1,11 @@
 using System;
-using Castle.Core.Internal;
 using EPiServer.Core;
 
 namespace Meridium.EPiServer.Migration.Support {
     public class PageMap<TPage> : IPageMap where TPage : PageData {
+        public string SourcePageTypeName { get; }
+        private readonly Action<SourcePage, TPage>[] _propertySetters;
+
         public PageMap(string sourcePageTypeName, Action<SourcePage, TPage>[] propertySetters) {
             SourcePageTypeName = sourcePageTypeName;
             _propertySetters   = propertySetters ?? new Action<SourcePage, TPage>[0];
@@ -18,10 +20,9 @@ namespace Meridium.EPiServer.Migration.Support {
         }
 
         public void Map(SourcePage source, TPage newPage) {
-            _propertySetters.ForEach( map => map(source, newPage) );
+            foreach (var propertySetter in _propertySetters) {
+                propertySetter(source, newPage);
+            }
         }
-
-        public string SourcePageTypeName { get; private set; }
-        private readonly Action<SourcePage, TPage>[] _propertySetters;
     }
 }

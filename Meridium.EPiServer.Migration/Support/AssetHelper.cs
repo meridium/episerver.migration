@@ -2,15 +2,16 @@
 using System.Linq;
 using EPiServer;
 using EPiServer.Core;
-using EPiServer.Data.Dynamic;
 using EPiServer.DataAccess;
-using EPiServer.Framework.Cache;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using EPiServer.Web;
 
 namespace Meridium.EPiServer.Migration.Support {
     static class AssetHelper {
+        private static readonly IContentRepository Repo = ServiceLocator.Current.GetInstance<IContentRepository>();
+        private static readonly ISiteDefinitionRepository SiteDefinitionRepository = ServiceLocator.Current.GetInstance<ISiteDefinitionRepository>();
+
         public static AssetPath GetAssetPath(MediaData file, ContentReference root) {
             var current  = file as IContent;
             var segments = new Stack<IContent>();  
@@ -50,10 +51,7 @@ namespace Meridium.EPiServer.Migration.Support {
         /// Returns the Current definition when no definition could be determined.
         /// </summary>
         public static SiteDefinition GetSiteDefinition(this ContentReference content) {
-            var siteDefRepo = new SiteDefinitionRepository(
-                ServiceLocator.Current.GetInstance<DynamicDataStoreFactory>(),
-                ServiceLocator.Current.GetInstance<ISynchronizedObjectInstanceCache>());
-            var sites = siteDefRepo.List();
+            var sites = SiteDefinitionRepository.List();
 
             var current = Repo.Get<IContent>(content);
             while (current.ContentLink != ContentReference.EmptyReference) {
@@ -65,7 +63,6 @@ namespace Meridium.EPiServer.Migration.Support {
             return SiteDefinition.Current;
         }
 
-        private static readonly IContentRepository Repo =
-            ServiceLocator.Current.GetInstance<IContentRepository>();
+       
     }
 }

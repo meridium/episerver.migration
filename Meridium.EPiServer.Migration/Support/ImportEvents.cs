@@ -1,25 +1,35 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using EPiServer;
 using EPiServer.Core;
-using EPiServer.Core.Transfer;
+using EPiServer.Core.Transfer.Internal;
 using EPiServer.DataAccess;
 using EPiServer.Enterprise;
+using EPiServer.Enterprise.Transfer;
+using EPiServer.Framework;
 using EPiServer.Security;
+using EPiServer.ServiceLocation;
 
 namespace Meridium.EPiServer.Migration.Support {
     class ImportEvents {
+        private readonly IContentRepository _contentRepository;
+        private readonly IUserImpersonation _userImpersonation;
+
         private OriginalValues _originalValues = null;
         public IMigrationLog Log { get; set; }
+
+        public ImportEvents() {
+            _contentRepository = ServiceLocator.Current.GetInstance<IContentRepository>();
+            _userImpersonation = ServiceLocator.Current.GetInstance<IUserImpersonation>();
+        }
 
         /// <summary>
         /// After the page is imported
         /// </summary>
-        public void DataImporter_ContentImported(DataImporter dataImported, ContentImportedEventArgs e) {
+        public void DataImporter_ContentImported(ITransferContext transferContext, ContentImportedEventArgs e) {
             PageData page = null;
             if (!ContentReference.IsNullOrEmpty(e.ContentLink)) {
-                page = DataFactory.Instance.Get<PageData>(e.ContentLink).CreateWritableClone();
+                page = _contentRepository.Get<PageData>(e.ContentLink).CreateWritableClone();
             }
 
             if (page == null) {
@@ -31,15 +41,13 @@ namespace Meridium.EPiServer.Migration.Support {
             page["PageChangedBy"] = _originalValues.PageChangedBy;
             page["PageCreatedBy"] = _originalValues.PageCreatedBy;
             page["PageChangedOnPublish"] = true;
-            PrincipalInfo.CurrentPrincipal = PrincipalInfo.CreatePrincipal(_originalValues.PageChangedBy);
+            PrincipalInfo.CurrentPrincipal = _userImpersonation.CreatePrincipal(_originalValues.PageChangedBy);
             try {
-                global::EPiServer.BaseLibrary.Context.Current["PageSaveDB:PageSaved"] = true;
-                DataFactory.Instance.Save(page, SaveAction.ForceCurrentVersion | SaveAction.Publish
-                                                | SaveAction.SkipValidation, 
-                    AccessLevel.NoAccess);
+                ContextCache.Current["PageSaveDB:PageSaved"] = true;
+                _contentRepository.Save(page, SaveAction.ForceCurrentVersion | SaveAction.Publish | SaveAction.SkipValidation, AccessLevel.NoAccess);
             }
-            finally {
-                global::EPiServer.BaseLibrary.Context.Current["PageSaveDB:PageSaved"] = null;
+            catch {
+                ContextCache.Current["PageSaveDB:PageSaved"] = null;
             }
 
             MigrationHook.Invoke(new AfterPageImportEvent(e), Log);
@@ -48,7 +56,7 @@ namespace Meridium.EPiServer.Migration.Support {
         /// <summary>
         /// Before page is imported
         /// </summary>
-        public void DataImporter_ContentImporting(DataImporter dataImporting, ContentImportingEventArgs e) {
+        public void DataImporter_ContentImporting(ITransferContext transferContext, ContentImportingEventArgs e) {
             _originalValues = null;
             if (e.TransferContentData is TransferPageData) {
                 MigrationHook.Invoke(new BeforePageImportEvent(e), Log);
@@ -70,11 +78,11 @@ namespace Meridium.EPiServer.Migration.Support {
             }
         }
 
-        public void DataImporter_FileImported(DataImporter dataimported, FileImportedEventArgs e) {
+        public void DataImporter_FileImported(ITransferContext transferContext, FileImportedEventArgs e) {
             MigrationHook.Invoke(new AfterFileImportEvent(e), Log);
         }
 
-        public void DataImporter_FileImporting(DataImporter dataimported, FileImportingEventArgs e) {
+        public void DataImporter_FileImporting(ITransferContext transferContext, FileImportingEventArgs e) {
             MigrationHook.Invoke(new BeforeFileImportEvent(e), Log);
         }
 

@@ -2,9 +2,8 @@
 using System.IO;
 using System.Threading;
 using System.Web;
-using System.Linq;
 using EPiServer.Core;
-using log4net;
+using EPiServer.Logging.Compatibility;
 using Meridium.EPiServer.Migration.Support;
 
 namespace Meridium.EPiServer.Migration {
@@ -48,6 +47,7 @@ namespace Meridium.EPiServer.Migration {
         }
 
         protected void Page_Load(object sender, EventArgs e) {
+            InitLog();
             try {
                 MigrationInitializer.FindAndExecuteInitializers();
                 if (!string.IsNullOrEmpty(Request.Form["Run"])) {
@@ -114,7 +114,7 @@ namespace Meridium.EPiServer.Migration {
             Logger.Log("Starting page type deletion @ {0:HH:mm:ss}", DateTime.Now);
             var deleter = new ImportedPageTypeDeleter(Logger);
             try {
-                deleter.DeletePageTypes(loggingOnly);
+                deleter.DeleteContentTypes(loggingOnly);
             }
             catch (Exception e) {
                 Logger.Log("!!! PAGE TYPE DELETION FAILED !!!");
@@ -162,10 +162,10 @@ namespace Meridium.EPiServer.Migration {
         private void InitLog() {
             Logger = new CompositeMigrationLog(
                 new HttpResponseLog(Response),
-                new Log4NetLog(Log4netLog));
+                new Log4NetLog(Log4NetLog));
         }
 
-        private static readonly ILog Log4netLog =
+        private static readonly ILog Log4NetLog =
             LogManager.GetLogger(typeof (Migrate));
     }
 }

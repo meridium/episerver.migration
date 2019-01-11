@@ -3,48 +3,54 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Castle.Core.Internal;
+using EPiServer.Logging.Compatibility;
 
 namespace Meridium.EPiServer.Migration.Support {
     public static class MapperRegistry {
+        private static readonly Dictionary<string, IPageMapper> PageMappers = new Dictionary<string, IPageMapper>();
+
         public static void Register(params IPageMapper[] mappers) {
-            mappers.ForEach( mapper => _mappers[mapper.Name] = mapper);
+            foreach (var pageMapper in mappers) {
+                PageMappers[pageMapper.Name] = pageMapper;
+            }
         }
 
         public static IPageMapper Get(string name) {
-            IPageMapper mapper;
-            return _mappers.TryGetValue(name, out mapper) ? mapper : null;
+            return PageMappers.TryGetValue(name, out var mapper) ? mapper : null;
         }
 
-        public static IEnumerable<IPageMapper> Mappers {
-            get { return _mappers.Values; }
-        } 
-
-        private readonly static Dictionary<string, IPageMapper> _mappers =
-            new Dictionary<string, IPageMapper>();
+        public static IEnumerable<IPageMapper> Mappers => PageMappers.Values;
     }
 
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class)]
     public class MigrationInitializerAttribute : Attribute {}
 
     static class MigrationInitializer {
-        private static readonly object locker = new object();
+        private static readonly object Locker = new object();
+        private static bool _isInitialized;
+        private static ILog _logger = LogManager.GetLogger(typeof (MapperRegistry));
 
         public static void FindAndExecuteInitializers(bool force = false) {
-            if (IsInitialized && !force) return;
+            if (_isInitialized && !force) return;
 
-            lock (locker) {
-                if (IsInitialized && !force) return;
+            lock (Locker) {
+                if (_isInitialized && !force) return;
 
                 ScanThisFolder();
 
-                IsInitialized = true;
+                _isInitialized = true;
             }
         }
 
         private static void ScanAndInvokeInitializer( Assembly assembly) {
-            var initializers = assembly.GetTypes().Where(a => a.HasAttribute<MigrationInitializerAttribute>());
-            initializers.ForEach(InvokeInitializer);
+            try {
+                var initializers = assembly.GetTypes()
+                    .Where(a => a.GetCustomAttributes<MigrationInitializerAttribute>().Any()).ToList();
+                initializers.ForEach(InvokeInitializer);
+            }
+            catch (Exception ex) {
+                _logger.ErrorFormat("Assembly {0} {1}", assembly.FullName, ex.Message);
+            }       
         }
 
         private static void ScanThisFolder() {
@@ -75,8 +81,6 @@ namespace Meridium.EPiServer.Migration.Support {
         private static void InvokeInitializer(Type initializer) {
             var method = initializer.GetMethod("Initialize", BindingFlags.Static | BindingFlags.Public);
             if (method != null) method.Invoke(null, null);
-        }
-
-        private static bool IsInitialized = false;
+        }     
     }
 }
